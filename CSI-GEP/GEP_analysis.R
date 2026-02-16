@@ -56,7 +56,7 @@ output.dir <- args[3]
 ranks = scan(text=args[4], sep = ",")
 print(ranks)
 
-check_for_rescue = as.numeric(args[5])
+check_for_rescue = as.logical(as.numeric(args[5]))
 
 jaccard.val <- c(seq(10,100,10))
     

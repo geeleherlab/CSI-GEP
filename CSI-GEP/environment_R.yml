@@ -1,0 +1,23 @@
+# CSI-GEP R environment (Jaccard.R, GEP_analysis.R). The csi-gep_r Docker image has R 4.1.2.
+# Create: conda env create -f environment_R.yml
+#   then, with the environment active, install the two GitHub-only packages (same commits as the image):
+#   Rscript -e 'remotes::install_github("ncchung/jaccard@ad1d8fc"); remotes::install_github("ahasverus/elbow@cf58784")'
+name: csigep_r
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - r-base=4.1
+  - r-igraph
+  - r-vroom
+  - r-dplyr
+  - r-ggplot2
+  - r-foreach
+  - r-doparallel
+  - r-iterators
+  - r-remotes
+  - r-rcpp
+  - r-magrittr
+  - bioconductor-qvalue   # jaccard dependency (Bioconductor)
+  - r-shiny               # jaccard dependency; prebuilt here so its compiled dependencies need no compiler
+  - compilers             # C/C++ toolchain matching conda's R, for installing packages from source

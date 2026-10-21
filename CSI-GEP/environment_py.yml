@@ -1,0 +1,23 @@
+# CSI-GEP Python environment (prepare.py, cNMF.py). Versions match the csi-gep_py Docker image
+# (Python 3.7.6; torch 1.13.1 wheels from PyPI include CUDA 11.7).  Create: conda env create -f environment_py.yml
+name: csigep_py
+channels:
+  - conda-forge
+dependencies:
+  - python=3.7
+  - pip
+  - pip:
+    - anndata==0.8.0
+    - fastcluster==1.2.6
+    - igraph==0.10.8
+    - numpy==1.21.6
+    - numba==0.56.4
+    - pandas==1.3.5
+    - scanpy==1.9.3
+    - scikit-learn==1.0.2
+    - scipy==1.7.3
+    - tqdm==4.65.0
+    - torch==1.13.1
+    - torchnmf==0.3.4
+    - tornado==6.2
+    - umap-learn==0.5.3

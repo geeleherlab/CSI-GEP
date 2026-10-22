@@ -15,12 +15,15 @@ parallel (GPU for NMF); about 8 h if every step runs one after another on a sing
 
 ## How CSI-GEP works (what each step does)
 
-| Step | Script (container) | What it does | Key output |
-|------|----------|-------------------------------|------------|
-| [2. Prepare](#2-prepare) | `prepare.py` (py) | Randomly splits cells into two halves (`split0`, `split1`). In each half: TPM-normalises, picks the `--numgenes` (default 2000) most over-dispersed genes, scales them to unit variance. | `cNMF_split{0,1}/` |
-| [3. Factorize](#3-factorize-every-k) | `cNMF.py` (py) | For one rank K (`--components`, no default), in each half: runs NMF `--n-iter` (default 100) times (GPU), clusters the replicate spectra into a consensus at two density thresholds (2.0 and 0.1), and scores every gene for every program (`gene_spectra_score`). Run once per K. | `cNMF_split*/cNMF_split*.gene_spectra_score.k_K.dt_0_1.txt` |
-| [4. Jaccard](#4-jaccard-test-for-every-k) | `Jaccard.R` (R) | For one K: compares every program in split0 with every program in split1 by the overlap of their top genes (Jaccard test, Bonferroni-corrected) at gene-list lengths ("Jaccard lengths", JL) 10, 20, …, 100. Significant pairs form a network; its communities are programs found reproducibly in both halves. Run once per K. | `results/jaccardtest_results_K<K>.RDS` |
-| [5. GEP analysis](#5-select-k-and-build-the-final-geps) | `GEP_analysis.R` (R) | Plots community number vs K for each JL, finds the elbow of each curve, and picks the (K, JL) whose curve falls most steeply after its elbow. Each community at that (K, JL) is one final GEP: the average of its member programs' gene scores. | `GEP_results/<name>_community_geps.RDS` |
+| Step | Option A (containers) | Option B (conda) | What it does | Key output |
+|------|------------|------------|----------------------------|-----------|
+| [2. Prepare](#2-prepare) | `/app/prepare.py` | `CSI-GEP/prepare.py` | Randomly splits cells into two halves (`split0`, `split1`). In each half: TPM-normalises, picks the `--numgenes` (default 2000) most over-dispersed genes, scales them to unit variance. | `cNMF_split{0,1}/` |
+| [3. Factorize](#3-factorize-every-k) | `/app/cNMF.py` | `CSI-GEP/cNMF.py` | For one rank K (`--components`, no default), in each half: runs NMF `--n-iter` (default 100) times (GPU), clusters the replicate spectra into a consensus at two density thresholds (2.0 and 0.1), and scores every gene for every program (`gene_spectra_score`). Run once per K. | `cNMF_split*/cNMF_split*.gene_spectra_score.k_K.dt_0_1.txt` |
+| [4. Jaccard](#4-jaccard-test-for-every-k) | `/app/Jaccard.R` | `CSI-GEP/Jaccard.R` | For one K: compares every program in split0 with every program in split1 by the overlap of their top genes (Jaccard test, Bonferroni-corrected) at gene-list lengths ("Jaccard lengths", JL) 10, 20, …, 100. Significant pairs form a network; its communities are programs found reproducibly in both halves. Run once per K. | `results/jaccardtest_results_K<K>.RDS` |
+| [5. GEP analysis](#5-select-k-and-build-the-final-geps) | `/app/GEP_analysis.R` | `CSI-GEP/GEP_analysis.R` | Plots community number vs K for each JL, finds the elbow of each curve, and picks the (K, JL) whose curve falls most steeply after its elbow. Each community at that (K, JL) is one final GEP: the average of its member programs' gene scores. | `GEP_results/<name>_community_geps.RDS` |
+
+The Python steps run in the `csi-gep_py` container (option A) or the `csigep_py` environment (option B), the R
+steps in `csi-gep_r` or `csigep_r`; see [0. Set up](#0-set-up).
 
 The final result is a **gene × GEP matrix** of program scores (all genes, not only the over-dispersed ones).
 CSI-GEP does not output a usage of each final GEP in every cell; per-half usages for the K programs are in

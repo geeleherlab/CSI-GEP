@@ -2,6 +2,10 @@
 Consensus and Scalable Interpretations of Gene Expression Programs in Single Cells.\
 We provide a bash file for submitting jobs on HPC and all scripts package dependencies can be found at CSI-GEP/.
 
+## Getting started
+New users: follow the **[end-to-end tutorial](TUTORIAL.md)**, from raw counts to final GEPs, with a simulated example
+that runs in under an hour on a cluster.
+
 ## Docker
 We provide Docker images that minimize complexity of configuration, and a step-by-step general instruction of running it on HPC.
 1. On your local host, pull Docker images:

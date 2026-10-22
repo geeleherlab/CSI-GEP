@@ -1,0 +1,6 @@
+._*
+.DS_Store
+.smbdelete*
+tutorial_run_*/
+tutorial_run_envB/
+tutorial_run/

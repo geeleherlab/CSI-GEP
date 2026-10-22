@@ -15,6 +15,7 @@ mkdir -p $log_dir
 dataset_name="Splatter_250k"
 K_list=$(<$PWD"/CSI-GEP/K.txt")
 data_directory=$PWD"/simulated_data/counts.h5ad"
+rescue=0 # set to 1 if you want to rescue more GEPs from unused columns with the next up Jaccard length
 
 CMD1="python CSI-GEP/prepare.py --numgenes 2000 -c $data_directory --output-dir $output_dir" 
 bsub -K -n 1 -e $log_dir/docker_err.txt -o $log_dir/docker_out.txt -J prepare -q standard -R "rusage[mem=100GB]" $CMD1
@@ -33,5 +34,5 @@ do
 done
 bwait -w 'ended(Jaccard_batch)'
 
-CMD4="Rscript --vanilla CSI-GEP/GEP_analysis.R $output_dir $dataset_name $GEP_dir ${K_list//$'\n'/,} FALSE"
+CMD4="Rscript --vanilla CSI-GEP/GEP_analysis.R $output_dir $dataset_name $GEP_dir ${K_list//$'\n'/,} $rescue"
 bsub -n 1 -e $log_dir/docker_err.txt -o $log_dir/docker_out.txt -J GEP_analysis -q standard -R "rusage[mem=100GB]" $CMD4

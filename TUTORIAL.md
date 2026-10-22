@@ -1,8 +1,9 @@
 # CSI-GEP tutorial: from raw counts to final GEPs
 
 This walkthrough simulates a small dataset with known gene expression programs, runs the complete CSI-GEP
-pipeline on it, and checks the result against the true programs. Every command below was run as written;
-the expected outputs quoted are from that run.
+pipeline on it, and checks the result against the true programs. Every command below was run as written,
+with both setup options. The outputs, figure and run times quoted are from the option A (container) run; option B
+gave the same 21 GEPs with K = 22 instead of 23 (see step 5).
 
 **You need:** either Singularity/Apptainer or Docker (option A, containers), or conda (option B, install the
 environments); ~10 GB disk; a GPU is recommended but optional (CSI-GEP falls back to CPU, much slower). Both options

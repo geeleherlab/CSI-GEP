@@ -41,6 +41,15 @@ An example code of executing the Dockerized CSI-GEP *csigep_submit.bsub* can be 
 
 ## Changelog                                                                  
                                                                                 
+  ### Tutorial and conda environments (2026-10-22)
+
+  **Added:** an end-to-end [tutorial](TUTORIAL.md) with a simulated example (`tutorial/`), and conda environment
+  files (`CSI-GEP/environment_py.yml`, `CSI-GEP/environment_R.yml`) for running the scripts without containers.
+
+  **Fixed:** `CSI-GEP/csigep_submit.bsub` passed the rescue argument as `FALSE`, which `GEP_analysis.R` converts to
+  `NA`, stopping with "missing value where TRUE/FALSE needed". It now passes `rescue=0` (set to `1` to enable rescue),
+  as `Docker/csigep_submit.bsub` does. The Docker images are unchanged.
+
   ### Docker Image Update (2026-02-10)                                          
                                                                                 
   **Fixed:** Boolean argument parsing bug in `GEP_analysis.R`                   

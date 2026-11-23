@@ -1,4 +1,4 @@
-# CSI-GEP R environment (Jaccard.R, GEP_analysis.R). The csi-gep_r Docker image has R 4.1.2.
+# CSI-GEP R environment (Jaccard.R, GEP_analysis.R). The csi-gep_r:2026.11 image has R 4.4.3 (Docker/Dockerfile_R).
 # Create: conda env create -f environment_R.yml
 #   then, with the environment active, install the two GitHub-only packages (same commits as the image):
 #   Rscript -e 'remotes::install_github("ncchung/jaccard@ad1d8fc"); remotes::install_github("ahasverus/elbow@cf58784")'

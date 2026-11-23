@@ -1,0 +1,41 @@
+# Build the CSI-GEP container images from Docker/Dockerfile_{py,R} and push them to ghcr.io/geeleherlab.
+# Trigger: push a tag images-<version> (e.g. images-2026.11 -> :2026.11 only), or run manually with a version;
+# the manual run can also move :latest (after the version has been tested).
+name: docker-images
+on:
+  push:
+    tags: ["images-*"]
+  workflow_dispatch:
+    inputs:
+      version: {description: "image tag, e.g. 2026.11", required: true}
+      latest: {description: "also tag as latest", type: boolean, default: false}
+permissions:
+  contents: read
+  packages: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image: [py, R]
+    steps:
+      - name: Free disk space (torch image is large)
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL && df -h /
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with: {registry: ghcr.io, username: "${{ github.actor }}", password: "${{ secrets.GITHUB_TOKEN }}"}
+      - name: Tags
+        id: t
+        run: |
+          v="${{ github.event.inputs.version }}"; [ -n "$v" ] || v="${GITHUB_REF_NAME#images-}"
+          n=$( [ "${{ matrix.image }}" = py ] && echo csi-gep_py || echo csi-gep_r )
+          t="ghcr.io/geeleherlab/$n:$v"; [ "${{ github.event.inputs.latest }}" = true ] && t="$t,ghcr.io/geeleherlab/$n:latest"
+          echo "tags=$t" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Docker/Dockerfile_${{ matrix.image }}
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.t.outputs.tags }}

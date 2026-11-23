@@ -46,20 +46,20 @@ Python and R) and `S` (where the CSI-GEP scripts are), and the rest of the tutor
 ### Option A: containers (nothing to install)
 
 ```bash
-singularity pull docker://ghcr.io/geeleherlab/csi-gep_py:latest    # -> csi-gep_py_latest.sif
-singularity pull docker://ghcr.io/geeleherlab/csi-gep_r:latest     # -> csi-gep_r_latest.sif
-PY="singularity exec --nv csi-gep_py_latest.sif"                   # --nv gives the container the GPU
-RR="singularity exec csi-gep_r_latest.sif"
+singularity pull docker://ghcr.io/geeleherlab/csi-gep_py:2026.11    # -> csi-gep_py_2026.11.sif
+singularity pull docker://ghcr.io/geeleherlab/csi-gep_r:2026.11     # -> csi-gep_r_2026.11.sif
+PY="singularity exec --nv csi-gep_py_2026.11.sif"                   # --nv gives the container the GPU
+RR="singularity exec csi-gep_r_2026.11.sif"
 S=/app                                                             # scripts inside the containers
 ```
 
-With Docker instead: `PY="docker run --gpus all -v $PWD:$PWD -w $PWD ghcr.io/geeleherlab/csi-gep_py:latest"`, and the
+With Docker instead: `PY="docker run --gpus all -v $PWD:$PWD -w $PWD ghcr.io/geeleherlab/csi-gep_py:2026.11"`, and the
 same for `RR` with `csi-gep_r` (no `--gpus`).
 
 ### Option B: conda environments (the repository's scripts)
 
 ```bash
-conda env create -f CSI-GEP/environment_py.yml      # Python 3.7 + torch 1.13.1 (CUDA 11.7), same versions as the container
+conda env create -f CSI-GEP/environment_py.yml      # Python 3.12 + torch 2.13.0 (CUDA 13.0 runtime bundled; needs a recent NVIDIA driver)
 conda env create -f CSI-GEP/environment_R.yml       # R 4.1
 conda activate csigep_r                              # two R packages come from GitHub (same commits as the container)
 Rscript -e 'remotes::install_github("ncchung/jaccard@ad1d8fc"); remotes::install_github("ahasverus/elbow@cf58784")'

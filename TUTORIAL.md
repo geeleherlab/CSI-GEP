@@ -3,13 +3,13 @@
 This walkthrough simulates a small dataset with known gene expression programs, runs the complete CSI-GEP
 pipeline on it, and checks the result against the true programs. Every command below was run as written,
 with both setup options. The outputs, figure and run times quoted are from the option A (container) run; option B
-gave the same 21 GEPs with K = 22 instead of 23 (see step 5).
+gave the same result (K = 22, 21 GEPs; see step 5).
 
 **You need:** either Singularity/Apptainer or Docker (option A, containers), or conda (option B, install the
 environments); ~10 GB disk; a GPU is recommended but optional (CSI-GEP falls back to CPU, much slower). Both options
 run the same scripts, and steps 1–7 are identical for both.
 
-**Time:** about 22 min of compute plus queue waiting (46 min in our test) on a cluster running one job per K in
+**Time:** about 26 min of compute plus queue waiting (59 min in our test, including 14 min to download the containers) on a cluster running one job per K in
 parallel (GPU for NMF); about 8 h if every step runs one after another on a single GPU (see [resources](#running-on-a-cluster)).
 
 ---
@@ -46,20 +46,20 @@ Python and R) and `S` (where the CSI-GEP scripts are), and the rest of the tutor
 ### Option A: containers (nothing to install)
 
 ```bash
-singularity pull docker://ghcr.io/geeleherlab/csi-gep_py:latest    # -> csi-gep_py_latest.sif
-singularity pull docker://ghcr.io/geeleherlab/csi-gep_r:latest     # -> csi-gep_r_latest.sif
-PY="singularity exec --nv csi-gep_py_latest.sif"                   # --nv gives the container the GPU
-RR="singularity exec csi-gep_r_latest.sif"
+singularity pull docker://ghcr.io/geeleherlab/csi-gep_py:2026.11    # -> csi-gep_py_2026.11.sif
+singularity pull docker://ghcr.io/geeleherlab/csi-gep_r:2026.11     # -> csi-gep_r_2026.11.sif
+PY="singularity exec --nv csi-gep_py_2026.11.sif"                   # --nv gives the container the GPU
+RR="singularity exec csi-gep_r_2026.11.sif"
 S=/app                                                             # scripts inside the containers
 ```
 
-With Docker instead: `PY="docker run --gpus all -v $PWD:$PWD -w $PWD ghcr.io/geeleherlab/csi-gep_py:latest"`, and the
+With Docker instead: `PY="docker run --gpus all -v $PWD:$PWD -w $PWD ghcr.io/geeleherlab/csi-gep_py:2026.11"`, and the
 same for `RR` with `csi-gep_r` (no `--gpus`).
 
 ### Option B: conda environments (the repository's scripts)
 
 ```bash
-conda env create -f CSI-GEP/environment_py.yml      # Python 3.7 + torch 1.13.1 (CUDA 11.7), same versions as the container
+conda env create -f CSI-GEP/environment_py.yml      # Python 3.12 + torch 2.13.0 (CUDA 13.0 runtime bundled; needs a recent NVIDIA driver)
 conda env create -f CSI-GEP/environment_R.yml       # R 4.1
 conda activate csigep_r                              # two R packages come from GitHub (same commits as the container)
 Rscript -e 'remotes::install_github("ncchung/jaccard@ad1d8fc"); remotes::install_github("ahasverus/elbow@cf58784")'
@@ -146,20 +146,19 @@ cat ${RUN}GEP_results/output_summary.txt
 
 ```
 Community_Number: 21
-Rank: 23
+Rank: 22
 Jaccard_Length: 100
 Rescued more programs: FALSE
-Automatically selected rank k = 23
+Automatically selected rank k = 22
 CSIGEP finished!
 ```
 
-CSI-GEP selected K = 23 and JL = 100 and found **21 GEPs**. K can be larger than the number of GEPs: in this run, three
-GEPs each merge three programs (one half split the program in two, and both pieces matched the same program in the
+CSI-GEP selected K = 22 and JL = 100 and found **21 GEPs**. K can be larger than the number of GEPs: in this run, one
+GEP merges three programs (one half split the program in two, and both pieces matched the same program in the
 other half), and one split1 program matched nothing (`demo_gepindex.RDS` lists the members of each GEP).
 
-This output is from option A. Option B, run on the same simulated data, selected K = 22 (JL = 100) and also
-found 21 GEPs that recover all 21 true programs; NMF starts from random values, so the selected K can differ
-slightly between runs.
+This output is from option A. Option B also selected K = 22 (JL = 100) and found 21 GEPs that recover all 21 true
+programs; NMF starts from random values, so the selected K can differ slightly between runs.
 
 ## 6. Read the results
 
@@ -186,7 +185,7 @@ The top genes of each GEP are what you interpret (marker genes, pathway enrichme
 **Check the curves.** `<name>_Curves.pdf` shows, for each JL, how many reproducible GEPs (communities) each K
 gives, and marks the (K, JL) that CSI-GEP selected: the JL whose curve falls most steeply after its elbow, at that
 curve's elbow. In this simulated demo the programs are cleanly separated, so the curves for all JLs rise to 21 at
-about K = 21 and stay close to 21 over a wide range of K; CSI-GEP selected K = 23, JL = 100. In real data the curves
+about K = 21 and stay close to 21 over a wide range of K; CSI-GEP selected K = 22, JL = 100. In real data the curves
 for different JLs can differ in shape and height and need not level off. Note that CSI-GEP only considers
 the K values listed in `K.txt`. If the selected K is at the upper end of that range, it may be worth scanning
 larger K (steps 3–4 for the new values, then step 5 on all of them).
@@ -194,7 +193,7 @@ larger K (steps 3–4 for the new values, then step 5 on all of them).
 ![Community curves from the demo run](tutorial/figures/demo_Curves.png)
 
 *`demo_Curves.pdf` from the demo run: number of reproducible GEPs vs K, one line per JL; the black point is the
-selected K = 23, JL = 100. Lines are loess-smoothed, so they can overshoot the actual counts (which never exceed 21
+selected K = 22, JL = 100. Lines are loess-smoothed, so they can overshoot the actual counts (which never exceed 21
 here); the exact counts per (K, JL) are in `demo_jaccardtest_communities.RDS`.*
 
 ## 7. Check against the truth (simulated data only)
@@ -281,7 +280,7 @@ A cell in split1 is handled the same way, with the split1 programs.
 
 ```r
 res <- "tutorial_run/"
-K   <- readRDS(paste0(res, "GEP_results/demo_optimized_parameters.RDS"))$Rank   # selected K (23 in the demo)
+K   <- readRDS(paste0(res, "GEP_results/demo_optimized_parameters.RDS"))$Rank   # selected K (22 in the demo)
 idx <- readRDS(paste0(res, "GEP_results/demo_gepindex.RDS"))   # one entry per GEP
 idx[[1]]                                                       # programs in GEP 1: $Split0 and $Split1
 
@@ -337,8 +336,8 @@ cat("cells whose main identity GEP is their group's GEP:", round(sum(apply(tab, 
 ```
 
 ```
-activity GEP: GEP13 | correlation with true usage: 0.67 
-cells whose main identity GEP is their group's GEP: 0.963 
+activity GEP: GEP19 | correlation with true usage: 0.67 
+cells whose main identity GEP is their group's GEP: 0.965 
 ```
 
 ### Scoring cells that were not in the run
@@ -366,19 +365,19 @@ parallel, the elapsed time for a step is roughly that of its slowest job.
 
 | Step | Jobs | Time per job | Peak memory per job |
 |---|---|---|---|
-| Simulate | 1 | 1 min | 7.5 GB |
-| Prepare | 1 | 22 s | 0.5 GB |
-| Factorize (`cNMF.py`) | 1 per K (39) | 7–13 min (6.7 h summed) | 3.7 GB |
-| Jaccard (`Jaccard.R`, 16 cores) | 1 per K (39) | 43 s – 6 min, longer for larger K (1.2 h summed) | 9.7 GB |
-| GEP analysis | 1 | 47 s | 0.4 GB |
+| Simulate | 1 | 1 min | 7.3 GB |
+| Prepare | 1 | 53 s | 0.9 GB |
+| Factorize (`cNMF.py`) | 1 per K (39) | 7–16 min (6.1 h summed) | 2.4 GB |
+| Jaccard (`Jaccard.R`, 16 cores) | 1 per K (39) | 75 s – 7 min, depending on K and the node (1.6 h summed) | 10.6 GB |
+| GEP analysis | 1 | 90 s | 0.4 GB |
 
-With one job per K in parallel, the longest chain of jobs is about 22 min of compute (simulate, prepare, the slowest
-NMF job, the slowest Jaccard job, GEP analysis); in our test the whole demo took 46 min elapsed, the difference being
-time spent waiting in the cluster queue.
+With one job per K in parallel, the longest chain of jobs is about 26 min of compute (simulate, prepare, the slowest
+NMF job, the slowest Jaccard job, GEP analysis); in our test the whole demo took 59 min elapsed, including 14 min to
+download the containers, the rest being time spent waiting in the cluster queue.
 
 Each Jaccard job runs K² tests (every split0 program against every split1 program) at each of 10 JLs, so
 K = 40 runs 16,000 tests against 1,000 at K = 10. For K well above this tutorial's range, request more time and
-memory than the table shows (in the demo, K = 40 took 4 min and 8.6 GB).
+memory than the table shows (in the demo, K = 40 took 2 min and 6.9 GB).
 
 ## Reproduce the paper
 

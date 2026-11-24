@@ -7,7 +7,7 @@
 # Out: tutorial_run_envB/ (envs/, data, CSI-GEP output, logs/, env_check.txt, test_summary.txt with STATUS line)
 set -euo pipefail
 REPO=$(pwd)
-RUN=$REPO/tutorial_run_envB/                 # trailing slash required by the R scripts
+RUN=$REPO/${RUN_NAME:-tutorial_run_envB}/     # trailing slash required by the R scripts; RUN_NAME to test another env
 ENV=$RUN/envs
 CONT=$REPO/tutorial_run/containers           # only used to compare scripts with the container copies
 NAME=demo
@@ -16,7 +16,7 @@ TAG=csigB$$
 mkdir -p $RUN/data $RUN/logs $RUN/results $RUN/GEP_results $ENV
 L=$RUN/logs
 PY="$ENV/csigep_py/bin/python"
-RR="$ENV/csigep_r/bin/Rscript"
+RR="${R_ENV:-$ENV/csigep_r}/bin/Rscript"   # R_ENV: reuse an existing R env
 KS=$(cat $REPO/tutorial/K.txt)
 KCSV=$(paste -sd, $REPO/tutorial/K.txt)
 
@@ -31,7 +31,7 @@ sub envs $CPU_Q 16 4 "" "-W 240" "module load conda3/202402 && cd $REPO && \
  { [ -x $PY ] || conda env create -q -p $ENV/csigep_py -f CSI-GEP/environment_py.yml; } && \
  { [ -x $RR ] || conda env create -q -p $ENV/csigep_r -f CSI-GEP/environment_R.yml; } && \
  PATH=$ENV/csigep_r/bin:\$PATH $RR -e \"if (!all(c(\\\"jaccard\\\",\\\"elbow\\\") %in% rownames(installed.packages()))) { remotes::install_github(\\\"ncchung/jaccard@ad1d8fc\\\", upgrade=\\\"never\\\"); remotes::install_github(\\\"ahasverus/elbow@cf58784\\\", upgrade=\\\"never\\\") }\" && \
- $PY -c \"import torch, torchnmf, scanpy, anndata, fastcluster, sklearn; print(\\\"python ok\\\", torch.__version__)\" > $RUN/env_check.txt && \
+ $PY -c \"import torch, torchnmf, scanpy, anndata, fastcluster, sklearn; print(\\\"python ok\\\", torch.__version__, \\\"cuda\\\", torch.version.cuda)\" > $RUN/env_check.txt && \
  $RR -e \"suppressMessages({library(jaccard); library(igraph); library(vroom); library(elbow); library(foreach); library(doParallel); library(dplyr); library(ggplot2)}); cat(\\\"R ok\\\", R.version.string, \\\"\\\\n\\\")\" >> $RUN/env_check.txt && \
  module load singularity/4.2.0 && for f in prepare.py cNMF.py; do singularity exec $CONT/csi-gep_py_latest.sif cat /app/\$f | cmp -s - CSI-GEP/\$f && echo \"\$f identical to container\" || echo \"\$f DIFFERS from container\"; done >> $RUN/env_check.txt && \
  for f in Jaccard.R GEP_analysis.R; do singularity exec $CONT/csi-gep_r_latest.sif cat /app/\$f | cmp -s - CSI-GEP/\$f && echo \"\$f identical to container\" || echo \"\$f DIFFERS from container\"; done >> $RUN/env_check.txt"

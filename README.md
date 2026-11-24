@@ -10,8 +10,8 @@ that runs in under an hour on a cluster.
 We provide Docker images that minimize complexity of configuration, and a step-by-step general instruction of running it on HPC.
 1. On your local host, pull Docker images:
    ```
-   docker pull ghcr.io/geeleherlab/csi-gep_py:latest
-   docker pull ghcr.io/geeleherlab/csi-gep_r:latest
+   docker pull ghcr.io/geeleherlab/csi-gep_py:2026.11
+   docker pull ghcr.io/geeleherlab/csi-gep_r:2026.11
    ```
 2. Below is an example on St. Jude HPC that utilizes singularity. On an HPC node:
    ```
@@ -25,8 +25,8 @@ We provide Docker images that minimize complexity of configuration, and a step-b
    ## docker login
    docker login -u <my_userID> svlprhpcreg01.stjude.org
    ## tag images
-   docker tag ghcr.io/geeleherlab/csi-gep_py:latest svlprhpcreg01.stjude.org/hpcf/csi-gep_py:latest
-   docker tag ghcr.io/geeleherlab/csi-gep_r:latest svlprhpcreg01.stjude.org/hpcf/csi-gep_r:latest
+   docker tag ghcr.io/geeleherlab/csi-gep_py:2026.11 svlprhpcreg01.stjude.org/hpcf/csi-gep_py:latest
+   docker tag ghcr.io/geeleherlab/csi-gep_r:2026.11 svlprhpcreg01.stjude.org/hpcf/csi-gep_r:latest
    ## push images
    docker image push svlprhpcreg01.stjude.org/hpcf/csi-gep_py:latest
    docker image push svlprhpcreg01.stjude.org/hpcf/csi-gep_r:latest
@@ -41,6 +41,16 @@ An example code of executing the Dockerized CSI-GEP *csigep_submit.bsub* can be 
 
 ## Changelog                                                                  
                                                                                 
+  ### Security updates to Python dependencies (2026-11-23)
+
+  **Changed:** `CSI-GEP/requirements_py.txt` and `CSI-GEP/environment_py.yml` now pin Python 3.12 and patched versions of
+  the Python packages (torch 2.13.0, numpy 1.26.4, scikit-learn 1.5.2, scanpy 1.10.3, anndata 0.10.9), resolving the
+  Dependabot alerts for the old pins (Python 3.7, torch 1.13.1). The torch wheels bundle the CUDA 13.0 runtime and need
+  a recent NVIDIA driver. The tutorial demo recovers all 21 simulated programs with the new environment. The container
+  images were rebuilt with the same versions from `Docker/Dockerfile_py` and `Docker/Dockerfile_R` (R 4.4.3) by the
+  `docker-images` GitHub Actions workflow in geeleherlab/CSI-GEP: `ghcr.io/geeleherlab/csi-gep_py:2026.11` and `csi-gep_r:2026.11` (also `:latest`).
+  The previous images remain available by digest.
+
   ### Tutorial and conda environments (2026-10-22)
 
   **Added:** an end-to-end [tutorial](TUTORIAL.md) with a simulated example (`tutorial/`), and conda environment

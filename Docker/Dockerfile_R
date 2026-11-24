@@ -1,0 +1,13 @@
+# CSI-GEP R image (Jaccard.R, GEP_analysis.R) -> ghcr.io/geeleherlab/csi-gep_r
+# Build from the repository root:  docker build -f Docker/Dockerfile_R -t csi-gep_r .
+# rocker/r-ver installs CRAN packages from a dated snapshot, so versions are fixed for a given R release.
+FROM rocker/r-ver:4.4.3
+RUN apt-get update && apt-get install -y --no-install-recommends libglpk-dev libgmp-dev libxml2-dev zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+RUN install2.r --error --skipinstalled igraph vroom dplyr ggplot2 foreach doParallel iterators remotes
+RUN Rscript -e 'remotes::install_github(c("jdstorey/qvalue@e861423", "ncchung/jaccard@ad1d8fc", "ahasverus/elbow@cf58784"), upgrade = "never")' \
+    && Rscript -e 'for (p in c("igraph","vroom","dplyr","ggplot2","foreach","doParallel","jaccard","elbow")) library(p, character.only = TRUE)'
+WORKDIR /app
+COPY CSI-GEP/Jaccard.R CSI-GEP/GEP_analysis.R /app/
+RUN chmod 755 /app/Jaccard.R /app/GEP_analysis.R
+CMD ["bash"]

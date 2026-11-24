@@ -1,14 +1,15 @@
 # Build the CSI-GEP container images from Docker/Dockerfile_{py,R} and push them to ghcr.io/geeleherlab.
-# Trigger: push a tag images-<version> (e.g. images-2026.11 -> :2026.11 only), or run manually with a version;
-# the manual run can also move :latest (after the version has been tested).
+# Trigger: push a tag images-<version> (e.g. images-2026.11 -> :2026.11), or run manually with a version.
+# After testing, push a tag latest-<version> (or run manually with latest=true) to point :latest at that
+# already-built version; this re-tags the tested image without rebuilding it.
 name: docker-images
 on:
   push:
-    tags: ["images-*"]
+    tags: ["images-*", "latest-*"]
   workflow_dispatch:
     inputs:
       version: {description: "image tag, e.g. 2026.11", required: true}
-      latest: {description: "also tag as latest", type: boolean, default: false}
+      latest: {description: "only re-tag this existing version as latest (no build)", type: boolean, default: false}
 permissions:
   contents: read
   packages: write
@@ -29,14 +30,18 @@ jobs:
       - name: Tags
         id: t
         run: |
-          v="${{ github.event.inputs.version }}"; [ -n "$v" ] || v="${GITHUB_REF_NAME#images-}"
+          v="${{ github.event.inputs.version }}"; [ -n "$v" ] || { v="${GITHUB_REF_NAME#images-}"; v="${v#latest-}"; }
+          retag=false; { [ "${{ github.event.inputs.latest }}" = true ] || [[ "$GITHUB_REF_NAME" == latest-* ]]; } && retag=true
           n=$( [ "${{ matrix.image }}" = py ] && echo csi-gep_py || echo csi-gep_r )
-          t="ghcr.io/geeleherlab/$n:$v"; [ "${{ github.event.inputs.latest }}" = true ] && t="$t,ghcr.io/geeleherlab/$n:latest"
-          echo "tags=$t" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/geeleherlab/$n" >> "$GITHUB_OUTPUT"; echo "version=$v" >> "$GITHUB_OUTPUT"; echo "retag=$retag" >> "$GITHUB_OUTPUT"
+      - name: Point latest at the tested version
+        if: steps.t.outputs.retag == 'true'
+        run: docker buildx imagetools create -t ${{ steps.t.outputs.image }}:latest ${{ steps.t.outputs.image }}:${{ steps.t.outputs.version }}
       - uses: docker/build-push-action@v6
+        if: steps.t.outputs.retag != 'true'
         with:
           context: .
           file: Docker/Dockerfile_${{ matrix.image }}
           platforms: linux/amd64
           push: true
-          tags: ${{ steps.t.outputs.tags }}
+          tags: ${{ steps.t.outputs.image }}:${{ steps.t.outputs.version }}

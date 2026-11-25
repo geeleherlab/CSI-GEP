@@ -1,8 +1,8 @@
-# CSI-GEP Python image (prepare.py, cNMF.py) -> ghcr.io/geeleherlab/csi-gep_py
+# CSI-GEP Python image (prepare.py, cNMF.py; csigep package = Python-only Jaccard and GEP analysis) -> ghcr.io/geeleherlab/csi-gep_py
 # Build from the repository root:  docker build -f Docker/Dockerfile_py -t csi-gep_py .
 # torch wheels bundle the CUDA 13.0 runtime; GPU use needs a recent NVIDIA driver (singularity --nv / docker --gpus all).
 FROM python:3.12-slim
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 NUMBA_CACHE_DIR=/tmp
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 NUMBA_CACHE_DIR=/tmp PYTHONPATH=/app
 WORKDIR /app
 COPY CSI-GEP/requirements_py.txt /app/requirements.txt
 # fastcluster 1.2.6 has no Python 3.12 wheel: compile it, then remove the compiler
@@ -11,4 +11,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends g++ \
     && apt-get purge -y --auto-remove g++ && rm -rf /var/lib/apt/lists/*
 COPY CSI-GEP/prepare.py CSI-GEP/cNMF.py /app/
 RUN chmod 755 /app/prepare.py /app/cNMF.py
+COPY csigep /app/csigep
 CMD ["bash"]

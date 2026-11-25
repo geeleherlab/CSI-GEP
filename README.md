@@ -117,7 +117,7 @@ An example code of executing the Dockerized CSI-GEP *csigep_submit.bsub* can be 
 
 ## Benchmarking 
 We show a complete example of benchmarking analysis on a simulated dataset with 250,000 cells and 25,000 genes. The simulated data is stored at simulated_data/.\
-Insert figure here.\
+
 Details can be found in Readme.md at benchmarking/.
 
 

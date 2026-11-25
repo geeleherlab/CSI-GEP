@@ -4,3 +4,13 @@
 tutorial_run_*/
 tutorial_run_envB/
 tutorial_run/
+
+# local test artefacts (Python-only port)
+.env/
+tests/output/
+tests/reference/demo/
+tests/reference/hvg/
+tests/reference/fullpanel/
+tests/**/*.log
+tests/**/*.bsub
+__pycache__/

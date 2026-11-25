@@ -10,10 +10,14 @@ dependencies:
   - pip:
     - anndata==0.10.9
     - fastcluster==1.2.6
+    - igraph==1.0.0
+    - matplotlib==3.11.2
+    - numba==0.68.1
     - numpy==1.26.4
     - pandas==2.2.3
     - scanpy==1.10.3
     - scikit-learn==1.5.2
+    - scikit-misc==0.5.3
     - scipy==1.14.1
     - torch==2.13.0
     - torchnmf==0.3.5
